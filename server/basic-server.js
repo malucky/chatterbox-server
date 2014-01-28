@@ -1,5 +1,6 @@
 /* Import node's http module: */
 var http = require("http");
+var handleRequest = require("./request-handler");	
 
 /* Every server needs to listen on a port with a unique number. The
  * standard port for HTTP servers is port 80, but that port is
@@ -7,6 +8,7 @@ var http = require("http");
  * so we'll use a higher port number that is not likely to be taken: */
 var port = 8080;
 
+console.log(port);
 /* For now, since you're running this server on your local machine,
  * we'll have it listen on the IP address 127.0.0.1, which is a
  * special address that always refers to localhost. */
