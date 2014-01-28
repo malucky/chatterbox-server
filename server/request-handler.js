@@ -1,8 +1,8 @@
 var url = require("url");
-var qs = require("querystring");
+var fs = require("fs");
 var StringDecoder = require('string_decoder').StringDecoder;
+
 var decoder = new StringDecoder('utf8');
-var messages = [];
 
 var handleRequest = function(request, response) {
   var successCode = 200;
@@ -30,18 +30,48 @@ var handleRequest = function(request, response) {
   var getMessages = function() {
     console.log('in getMessages');
     response.writeHead(successCode, headers); 
-    response.end( JSON.stringify({results: messages}) );
+    fs.readFile(__dirname + "/data.txt", function(err, data){
+      if (err) throw err;
+      if (decoder.write(data)) {
+        var messages = JSON.parse(decoder.write(data));
+      }
+      response.end(JSON.stringify(messages));
+    });
   };
 
   var postMessage = function() {
     response.writeHead(createCode, headers);
-      request.on("data", function(data) {  
-      var message = JSON.parse(decoder.write(data));
-      message.createdAt = new Date;
-      console.log('posting ', message);
-      messages.push(message);
+    fs.readFile(__dirname + "/data.txt", function(err, data){
+      if (err) throw err;
+      if (decoder.write(data)) { 
+        var messages = JSON.parse(decoder.write(data));
+      } else {
+        var messages = {results: []};
+      }      
+      request.on("data", function(data) {
+        var message = JSON.parse(decoder.write(data));
+        message.createdAt = new Date;
+        messages.results.push(message);
+        console.log(messages);
+        fs.writeFile(__dirname + "/data.txt", JSON.stringify(messages), function(err) {
+          if (err) throw err;
+          console.log('finished writing')
+        });
+      });
+      //console.log(messages);
+      response.end(JSON.stringify(messages));
+      // request.on("data", function(data) {  
+      //   var message = JSON.parse(decoder.write(data));
+      //   message.createdAt = new Date;
+      //   messages.push(message);
+      //   message = JSON.stringify(message);
+      //   console.log('posting ', message);
+      //   fs.writeFile(__dirname + '/data.txt', JSON.stringify(messages), function(err) {
+      //     if (err) throw err;
+      //     console.log('wrote');
+      //   });
+      // });
     });
-    response.end( JSON.stringify(messages) );
   };
 
   route();
