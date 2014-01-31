@@ -34,7 +34,7 @@ var handleRequest = function(request, response) {
 
   var getMessages = function() {
     console.log('in getMessages');
-    response.writeHead(successCode, headers); 
+    response.writeHead(successCode, headers);
     fs.readFile(__dirname + "/data.txt", function(err, data){
       if (err) throw err;
       if (decoder.write(data)) {
@@ -50,8 +50,10 @@ var handleRequest = function(request, response) {
       collected += data;
     });
     request.on("end", function(){
-      messages.results.unshift(JSON.parse(collected));
-      console.log(JSON.stringify(messages));
+      var message = JSON.parse(collected);
+      message['createdAt'] = Date.now();
+      messages.results.unshift(message);
+      //console.log(JSON.stringify(messages));
       cb(JSON.stringify(messages));
     });
   };
@@ -64,11 +66,11 @@ var handleRequest = function(request, response) {
   var postMessage = function() {
     fs.readFile(__dirname + "/data.txt", function(err, data){
       if (err) throw err;
-      if (decoder.write(data)) { 
+      if (decoder.write(data)) {
         var messages = JSON.parse(decoder.write(data));
       } else {
         var messages = {results: []};
-      }      
+      }
       collectData(request, writeToFile, messages);
       respond(response, 201,"posted");
     });
